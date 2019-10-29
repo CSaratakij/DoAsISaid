@@ -94,15 +94,17 @@ def run():
         try:
             #Attempt to receive up to 1024 bytes of data
             (data, addr) = listener.recvfrom(1024) 
-            #(data, addr) = listener.recvfrom(128 * 1024)
-            print("Receive : ", data)
+            print("Receive : ", data, " from ", addr)
             
             if data == "U":
                 trackFacialFeature = True
             elif data == "D":
                 trackFacialFeature = False
 
-            listener.sendto("Enable track feature : " + str(trackFacialFeature), (UDP_IP, UDP_TARGET_PORT))
+            msg = "(Server) : Enable track feature (" + str(trackFacialFeature) + ")\n"
+            listener.sendto(msg, addr)
+
+            print(msg)
 
         except socket.error:
             pass
