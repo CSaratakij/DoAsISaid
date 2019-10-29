@@ -4,10 +4,6 @@ import numpy as np
 import cv2
 import dlib
 import imutils
-
-#Test
-def Test():
-    print("success full import")
     
 facial_features_cordinates = {}
 

@@ -69,8 +69,7 @@ public class UDPReceiver : MonoBehaviour
         GUIStyle style = new GUIStyle();
 
         style.alignment = TextAnchor.UpperLeft;
-        GUI.Box(rectObj, "# UDPReceive\n127.0.0.1 " + listenPort + " #\n"
-                + "shell> nc -u 127.0.0.1 : " + listenPort + " \n"
+        GUI.Box(rectObj, "# Listen to 127.0.0.1 " + listenPort + " #\n"
                 + "\nLast Packet: \n" + lastReceivedUDPPacket + "\n"
         , style); ;
     }
@@ -78,7 +77,7 @@ public class UDPReceiver : MonoBehaviour
     // init
     private void init()
     {
-        print("Sending to 127.0.0.1 : " + sendPort);
+        //print("Sending to 127.0.0.1 : " + sendPort);
         print("Listen to 127.0.0.1 : " + listenPort);
  
         receiveThread = new Thread(

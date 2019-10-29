@@ -9,8 +9,6 @@ def normalize(size, maxSize):
     return size / maxSize
 
 def run():
-    Test()
-    
     CV_CAP_PROP_FRAME_WIDTH = 3
     CV_CAP_PROP_FRAME_HEIGHT = 4
 
@@ -94,6 +92,7 @@ def run():
             MESSAGE = str(normX) + "," + str(normY) + "," + str(normWidth) + "," + str(normHeight) + "," + str(mouthHeight) + "," + str(mouthLow) + "\n"
             sock.sendto(MESSAGE, (UDP_IP, UDP_TARGET_PORT))
 
+        # Listener
         try:
             #Attempt to receive up to 1024 bytes of data
             (data, addr) = listener.recvfrom(1024) 
