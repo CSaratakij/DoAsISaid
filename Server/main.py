@@ -15,9 +15,10 @@ def run():
     CV_CAP_PROP_FRAME_HEIGHT = 4
 
     UDP_IP = "127.0.0.1"
-    UDP_PORT = 6100
+    UDP_PORT = 6000
+    UDP_TARGET_PORT = 6100
+    
     MESSAGE = ""
-
     cap = cv2.VideoCapture(0)
 
     width = cap.get(CV_CAP_PROP_FRAME_WIDTH)
@@ -28,23 +29,30 @@ def run():
     mouthHeight = 0
     mouthLow = 0
 
-    print("Width : " + str(width))
-    print("Height : " + str(height))
+    print("[ Webcam ] ")
+    print("Width : ", width)
+    print("Height : ", height)
 
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 
-    print("UDP target IP:", UDP_IP)
-    print("UDP target port:", UDP_PORT)
+    print("IP : ", UDP_IP)
+    print("Listen at  :", UDP_PORT)
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    
+    listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    listener.bind((UDP_IP, UDP_PORT))
+    listener.setblocking(0)
 
     running = True
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
     print("Running....")
 
     while True:
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        
+
         # Capture frame-by-frame
         ret, frame = cap.read()
 
@@ -81,9 +89,25 @@ def run():
             normHeight = normalize(h, height)
             
             MESSAGE = str(normX) + "," + str(normY) + "," + str(normWidth) + "," + str(normHeight) + "," + str(mouthHeight) + "," + str(mouthLow) + "\n"
-            sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+            sock.sendto(MESSAGE, (UDP_IP, UDP_TARGET_PORT))
 
-    # Clear junk
+        try:
+            #Attempt to receive up to 1024 bytes of data
+            (data, addr) = listener.recvfrom(1024) 
+            #(data, addr) = listener.recvfrom(128 * 1024)
+            print("Receive : ", data)
+            
+            if data == "U":
+                trackFacialFeature = True
+            elif data == "D":
+                trackFacialFeature = False
+
+            listener.sendto("Enable track feature : " + str(trackFacialFeature), (UDP_IP, UDP_TARGET_PORT))
+
+        except socket.error:
+            pass
+        
+
     cap.release()
     cv2.destroyAllWindows()
 
@@ -91,4 +115,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-

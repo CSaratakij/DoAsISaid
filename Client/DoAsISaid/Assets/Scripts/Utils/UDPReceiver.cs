@@ -7,29 +7,31 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
  
-public class UDPReceive : MonoBehaviour {
-   
-    // receiving Thread
+public class UDPReceiver : MonoBehaviour
+{
+    //Test
+    bool isUseFacialTrack = false;
+
+    [SerializeField]
+    int sendPort;
+
+    [SerializeField]
+    int listenPort;
+
     Thread receiveThread;
- 
-    // udpclient object
     UdpClient client;
  
-    // public
-    // public string IP = "127.0.0.1"; default local
-    public int port; // define > init
- 
-    // infos
-    public string lastReceivedUDPPacket="";
-    public string allReceivedUDPPackets="";
+    string lastReceivedUDPPacket = "";
+    string allReceivedUDPPackets = "";
    
-    // start from shell
+    // Start from shell
     private static void Main()
     {
-       UDPReceive receiveObj=new UDPReceive();
+       UDPReceiver receiveObj = new UDPReceiver();
        receiveObj.init();
  
-        string text="";
+        string text = "";
+
         do
         {
              text = Console.ReadLine();
@@ -37,20 +39,39 @@ public class UDPReceive : MonoBehaviour {
         while(!text.Equals("exit"));
     }
 
-    // start from unity3d
     public void Start()
     {
         init();
     }
-   
+
+    //Test
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            try
+            {
+                isUseFacialTrack = !isUseFacialTrack;
+                string message = (isUseFacialTrack) ? "U" : "D";
+                byte[] sendByte = Encoding.ASCII.GetBytes(message);
+                client.Send(sendByte, sendByte.Length, "127.0.0.1", sendPort);
+            }
+            catch (SocketException)
+            {
+                Debug.Log("Send error...");
+            }
+        }
+    }
+
+  
     // OnGUI
     void OnGUI()
     {
         Rect rectObj=new Rect(40,10,200,400);
             GUIStyle style = new GUIStyle();
                 style.alignment = TextAnchor.UpperLeft;
-        GUI.Box(rectObj,"# UDPReceive\n127.0.0.1 "+port+" #\n"
-                    + "shell> nc -u 127.0.0.1 : "+port+" \n"
+        GUI.Box(rectObj,"# UDPReceive\n127.0.0.1 "+listenPort+" #\n"
+                    + "shell> nc -u 127.0.0.1 : "+listenPort+" \n"
                     + "\nLast Packet: \n"+ lastReceivedUDPPacket
                     + "\n\nAll Messages: \n"+allReceivedUDPPackets
                 ,style);
@@ -59,24 +80,13 @@ public class UDPReceive : MonoBehaviour {
     // init
     private void init()
     {
-        // Endpunkt definieren, von dem die Nachrichten gesendet werden.
         print("UDPSend.init()");
-       
-        // define port
-        // port = 8051;
+        print("Sending to 127.0.0.1 : " + sendPort);
+        print("Test-Sending to this Port: nc -u 127.0.0.1  " + sendPort + "");
  
-        // status
-        print("Sending to 127.0.0.1 : "+port);
-        print("Test-Sending to this Port: nc -u 127.0.0.1  "+port+"");
- 
-   
-        // ----------------------------
-        // Abhören
-        // ----------------------------
-        // Lokalen Endpunkt definieren (wo Nachrichten empfangen werden).
-        // Einen neuen Thread für den Empfang eingehender Nachrichten erstellen.
         receiveThread = new Thread(
             new ThreadStart(ReceiveData));
+
         receiveThread.IsBackground = true;
         receiveThread.Start();
     }
@@ -84,27 +94,21 @@ public class UDPReceive : MonoBehaviour {
     // receive thread
     private  void ReceiveData()
     {
-        client = new UdpClient(6100);
+        client = new UdpClient(listenPort);
 
         while (true)
         {
             try
             {
-                // Bytes empfangen.
                 IPEndPoint anyIP = new IPEndPoint(IPAddress.Any, 0);
+
                 byte[] data = client.Receive(ref anyIP);
- 
-                // Bytes mit der UTF8-Kodierung in das Textformat kodieren.
                 string text = Encoding.UTF8.GetString(data);
- 
-                // Den abgerufenen Text anzeigen.
+
                 print(">> " + text);
                
-                // latest UDPpacket
                 lastReceivedUDPPacket=text;
-               
-                // ....
-                allReceivedUDPPackets=allReceivedUDPPackets+text;
+                allReceivedUDPPackets = allReceivedUDPPackets + text;
                
             }
             catch (Exception err)
@@ -114,11 +118,9 @@ public class UDPReceive : MonoBehaviour {
         }
     }
    
-    // getLatestUDPPacket
-    // cleans up the rest
     public string getLatestUDPPacket()
     {
-        allReceivedUDPPackets="";
+        allReceivedUDPPackets = "";
         return lastReceivedUDPPacket;
     }
 }

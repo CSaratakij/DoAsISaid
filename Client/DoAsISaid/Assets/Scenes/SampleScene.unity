@@ -233,9 +233,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20c10e34e3ec423468b54953ce734934, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  port: 6100
-  lastReceivedUDPPacket: 
-  allReceivedUDPPackets: 
+  sendPort: 6000
+  listenPort: 6100
 --- !u!4 &1399670736
 Transform:
   m_ObjectHideFlags: 0
