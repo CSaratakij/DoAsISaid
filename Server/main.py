@@ -3,10 +3,14 @@ import time
 import numpy as np
 import cv2
 
+from lib.detect_face_features import *
+
 def normalize(size, maxSize):
     return size / maxSize
 
 def run():
+    Test()
+    
     CV_CAP_PROP_FRAME_WIDTH = 3
     CV_CAP_PROP_FRAME_HEIGHT = 4
 
@@ -18,6 +22,11 @@ def run():
 
     width = cap.get(CV_CAP_PROP_FRAME_WIDTH)
     height = cap.get(CV_CAP_PROP_FRAME_HEIGHT)
+
+    trackFacialFeature = False
+    
+    mouthHeight = 0
+    mouthLow = 0
 
     print("Width : " + str(width))
     print("Height : " + str(height))
@@ -39,28 +48,39 @@ def run():
         # Capture frame-by-frame
         ret, frame = cap.read()
 
-        # Detect faces
+        # Convert frame to gray
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray = cv2.equalizeHist(gray)
 
-        #faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        if trackFacialFeature:
+            # Detect face features
+            face_features = detect_facial_feature(gray)
+
+            if len(face_features) > 0:
+                mouthHeight = face_features[62][1]
+                mouthLow = face_features[66][1]
+        else:
+            mouthHeight = 0
+            mouthLow = 0
+        
+        # Detect faces        
+        gray = cv2.equalizeHist(gray)
         faces = face_cascade.detectMultiScale(gray)
 
         # Draw rectangle around the faces
-        for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
-            
-        # Display the frame
-        cv2.imshow('Press q to quit', frame)
+        #for (x, y, w, h) in faces:
+            #cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-        # Send via UDP
+        # Display the frame
+        #cv2.imshow('Press q to quit', frame)
+
+        # Send info to game via UDP
         for (x, y, w, h) in faces:
             normX = normalize(x, width)
             normY = normalize(y, height)
             normWidth = normalize(w, width)
             normHeight = normalize(h, height)
             
-            MESSAGE = str(normX) + "," + str(normY) + "," + str(normWidth) + "," + str(normHeight) + "\n"
+            MESSAGE = str(normX) + "," + str(normY) + "," + str(normWidth) + "," + str(normHeight) + "," + str(mouthHeight) + "," + str(mouthLow) + "\n"
             sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
     # Clear junk
@@ -68,7 +88,6 @@ def run():
     cv2.destroyAllWindows()
 
     print("Stop...")
-
 
 if __name__ == "__main__":
     run()

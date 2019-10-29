@@ -2,10 +2,13 @@
 from collections import OrderedDict
 import numpy as np
 import cv2
-import argparse
 import dlib
 import imutils
 
+#Test
+def Test():
+    print("success full import")
+    
 facial_features_cordinates = {}
 
 # define a dictionary that maps the indexes of the facial
@@ -19,15 +22,6 @@ FACIAL_LANDMARKS_INDEXES = OrderedDict([
     ("Nose", (27, 35)),
     ("Jaw", (0, 17))
 ])
-
-# construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--shape-predictor", required=True,
-	help="path to facial landmark predictor")
-ap.add_argument("-i", "--image", required=True,
-	help="path to input image")
-args = vars(ap.parse_args())
-
 
 def shape_to_numpy_array(shape, dtype="int"):
     # initialize the list of (x, y)-coordinates
@@ -85,26 +79,22 @@ def visualize_facial_landmarks(image, shape, colors=None, alpha=0.75):
     print(facial_features_cordinates)
     return output
 
-# initialize dlib's face detector (HOG-based) and then create
-# the facial landmark predictor
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor(args["shape_predictor"])
+def detect_facial_feature(image):
+    # initialize dlib's face detector (HOG-based) and then create
+    # the facial landmark predictor
+    detector = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor("lib/shape_predictor_68_face_landmarks.dat")
 
-# load the input image, resize it, and convert it to grayscale
-image = cv2.imread(args["image"])
-image = imutils.resize(image, width=500)
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image = imutils.resize(image, width=500)
+    rects = detector(image, 1)
+    shape = []
+    
+    # loop over the face detections
+    for (i, rect) in enumerate(rects):
+        # determine the facial landmarks for the face region, then
+        # convert the landmark (x, y)-coordinates to a NumPy array
+        shape = predictor(image, rect)
+        shape = shape_to_numpy_array(shape)
 
-# detect faces in the grayscale image
-rects = detector(gray, 1)
-
-# loop over the face detections
-for (i, rect) in enumerate(rects):
-    # determine the facial landmarks for the face region, then
-    # convert the landmark (x, y)-coordinates to a NumPy array
-    shape = predictor(gray, rect)
-    shape = shape_to_numpy_array(shape)
-
-    output = visualize_facial_landmarks(image, shape)
-    cv2.imshow("Image", output)
-    cv2.waitKey(0)
+    return shape
+    
