@@ -1,17 +1,12 @@
-﻿using UnityEngine;
-using System.Collections;
- 
-using System;
+﻿using System;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
- 
+using UnityEngine;
+
 public class UDPReceiver : MonoBehaviour
 {
-    //Test
-    bool isUseFacialTrack = false;
-
     [SerializeField]
     int sendPort;
 
@@ -22,9 +17,8 @@ public class UDPReceiver : MonoBehaviour
     UdpClient client;
  
     string lastReceivedUDPPacket = "";
-    string allReceivedUDPPackets = "";
+    //string allReceivedUDPPackets = "";
    
-    // Start from shell
     private static void Main()
     {
        UDPReceiver receiveObj = new UDPReceiver();
@@ -44,7 +38,10 @@ public class UDPReceiver : MonoBehaviour
         init();
     }
 
-    //Test
+
+#if UNITY_EDITOR
+    bool isUseFacialTrack = false;
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.A))
@@ -52,8 +49,10 @@ public class UDPReceiver : MonoBehaviour
             try
             {
                 isUseFacialTrack = !isUseFacialTrack;
+
                 string message = (isUseFacialTrack) ? "U" : "D";
                 byte[] sendByte = Encoding.ASCII.GetBytes(message);
+
                 client.Send(sendByte, sendByte.Length, "127.0.0.1", sendPort);
             }
             catch (SocketException)
@@ -62,27 +61,25 @@ public class UDPReceiver : MonoBehaviour
             }
         }
     }
-
+#endif
   
-    // OnGUI
     void OnGUI()
     {
         Rect rectObj=new Rect(40,10,200,400);
-            GUIStyle style = new GUIStyle();
-                style.alignment = TextAnchor.UpperLeft;
-        GUI.Box(rectObj,"# UDPReceive\n127.0.0.1 "+listenPort+" #\n"
-                    + "shell> nc -u 127.0.0.1 : "+listenPort+" \n"
-                    + "\nLast Packet: \n"+ lastReceivedUDPPacket
-                    + "\n\nAll Messages: \n"+allReceivedUDPPackets
-                ,style);
+        GUIStyle style = new GUIStyle();
+
+        style.alignment = TextAnchor.UpperLeft;
+        GUI.Box(rectObj, "# UDPReceive\n127.0.0.1 " + listenPort + " #\n"
+                + "shell> nc -u 127.0.0.1 : " + listenPort + " \n"
+                + "\nLast Packet: \n" + lastReceivedUDPPacket + "\n"
+        , style); ;
     }
        
     // init
     private void init()
     {
-        print("UDPSend.init()");
         print("Sending to 127.0.0.1 : " + sendPort);
-        print("Test-Sending to this Port: nc -u 127.0.0.1  " + sendPort + "");
+        print("Listen to 127.0.0.1 : " + listenPort);
  
         receiveThread = new Thread(
             new ThreadStart(ReceiveData));
@@ -107,8 +104,8 @@ public class UDPReceiver : MonoBehaviour
 
                 print(">> " + text);
                
-                lastReceivedUDPPacket=text;
-                allReceivedUDPPackets = allReceivedUDPPackets + text;
+                lastReceivedUDPPacket = text;
+                //allReceivedUDPPackets = allReceivedUDPPackets + text;
                
             }
             catch (Exception err)
@@ -120,7 +117,7 @@ public class UDPReceiver : MonoBehaviour
    
     public string getLatestUDPPacket()
     {
-        allReceivedUDPPackets = "";
+        //allReceivedUDPPackets = "";
         return lastReceivedUDPPacket;
     }
 }

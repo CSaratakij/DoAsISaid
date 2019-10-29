@@ -75,11 +75,11 @@ def run():
         faces = face_cascade.detectMultiScale(gray)
 
         # Draw rectangle around the faces
-        #for (x, y, w, h) in faces:
-            #cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
         # Display the frame
-        #cv2.imshow('Press q to quit', frame)
+        cv2.imshow('Press q to quit', frame)
 
         # Send info to game via UDP
         for (x, y, w, h) in faces:
@@ -87,6 +87,9 @@ def run():
             normY = normalize(y, height)
             normWidth = normalize(w, width)
             normHeight = normalize(h, height)
+
+            normX = 1.0 - normX
+            np.clip(normX, 0, 1)
             
             MESSAGE = str(normX) + "," + str(normY) + "," + str(normWidth) + "," + str(normHeight) + "," + str(mouthHeight) + "," + str(mouthLow) + "\n"
             sock.sendto(MESSAGE, (UDP_IP, UDP_TARGET_PORT))
