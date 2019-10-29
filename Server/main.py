@@ -3,59 +3,73 @@ import time
 import numpy as np
 import cv2
 
-UDP_IP = "127.0.0.1"
-UDP_PORT = 6100
-MESSAGE = ""
+def normalize(size, maxSize):
+    return size / maxSize
 
-cap = cv2.VideoCapture(0)
+def run():
+    CV_CAP_PROP_FRAME_WIDTH = 3
+    CV_CAP_PROP_FRAME_HEIGHT = 4
 
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
-eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
+    UDP_IP = "127.0.0.1"
+    UDP_PORT = 6100
+    MESSAGE = ""
 
-print("UDP target IP:", UDP_IP)
-print("UDP target port:", UDP_PORT)
+    cap = cv2.VideoCapture(0)
 
-running = True
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    width = cap.get(CV_CAP_PROP_FRAME_WIDTH)
+    height = cap.get(CV_CAP_PROP_FRAME_HEIGHT)
 
-print("Running....")
+    print("Width : " + str(width))
+    print("Height : " + str(height))
 
-while True:
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-    
-    # Capture frame-by-frame
-    ret, frame = cap.read()
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 
-    # Detect faces
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.equalizeHist(gray)
+    print("UDP target IP:", UDP_IP)
+    print("UDP target port:", UDP_PORT)
 
-    #faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-    faces = face_cascade.detectMultiScale(gray)
+    running = True
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    # Draw rectangle around the faces
-    for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+    print("Running....")
+
+    while True:
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
         
-         #-- In each face, detect eyes
-        faceROI = gray[y:y+h,x:x+w]
-        eyes = eyes_cascade.detectMultiScale(faceROI)
-        
-        for (x2,y2,w2,h2) in eyes:
-            eye_center = (x + x2 + w2//2, y + y2 + h2//2)
-            radius = int(round((w2 + h2)*0.25))
-            frame = cv2.circle(frame, eye_center, radius, (255, 255, 0 ), 4)
-    
-    # Display the frame
-    cv2.imshow('Press q to quit', frame)
+        # Capture frame-by-frame
+        ret, frame = cap.read()
 
-    for (x, y, w, h) in faces:
-        MESSAGE = str(x) + "," + str(y) + "," + str(w) + "," + str(h)
-        sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+        # Detect faces
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)
 
-# When everything done, release the capture
-cap.release()
-cv2.destroyAllWindows()
+        #faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        faces = face_cascade.detectMultiScale(gray)
 
-print("Stop...")
+        # Draw rectangle around the faces
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            
+        # Display the frame
+        cv2.imshow('Press q to quit', frame)
+
+        # Send via UDP
+        for (x, y, w, h) in faces:
+            normX = normalize(x, width)
+            normY = normalize(y, height)
+            normWidth = normalize(w, width)
+            normHeight = normalize(h, height)
+            
+            MESSAGE = str(normX) + "," + str(normY) + "," + str(normWidth) + "," + str(normHeight) + "\n"
+            sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+
+    # Clear junk
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Stop...")
+
+
+if __name__ == "__main__":
+    run()
+
