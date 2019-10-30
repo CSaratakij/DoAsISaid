@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class UDPReceiver : MonoBehaviour
 {
+    public static UDPReceiver Instance = null;
+
     [SerializeField]
     int sendPort;
 
@@ -15,8 +17,10 @@ public class UDPReceiver : MonoBehaviour
 
     Thread receiveThread;
     UdpClient client;
- 
+
+    public string LastReceivedPacket => lastReceivedUDPPacket;
     string lastReceivedUDPPacket = "";
+
     //string allReceivedUDPPackets = "";
    
     private static void Main()
@@ -31,6 +35,12 @@ public class UDPReceiver : MonoBehaviour
              text = Console.ReadLine();
         }
         while(!text.Equals("exit"));
+    }
+
+    void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
     }
 
     public void Start()
@@ -69,7 +79,7 @@ public class UDPReceiver : MonoBehaviour
         GUIStyle style = new GUIStyle();
 
         style.alignment = TextAnchor.UpperLeft;
-        GUI.Box(rectObj, "# Listen to 127.0.0.1 " + listenPort + " #\n"
+        GUI.Box(rectObj, "# Listen to 127.0.0.1:" + listenPort + " #\n"
                 + "\nLast Packet: \n" + lastReceivedUDPPacket + "\n"
         , style); ;
     }
@@ -101,7 +111,7 @@ public class UDPReceiver : MonoBehaviour
                 byte[] data = client.Receive(ref anyIP);
                 string text = Encoding.UTF8.GetString(data);
 
-                print(">> " + text);
+                //print(">> " + text);
                
                 lastReceivedUDPPacket = text;
                 //allReceivedUDPPackets = allReceivedUDPPackets + text;
