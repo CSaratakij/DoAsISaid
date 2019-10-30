@@ -12,12 +12,21 @@ namespace HoverBall
         [SerializeField]
         float speed = 2.0f;
 
+        [SerializeField]
+        float disableDelay = 5.0f;
+
         Rigidbody2D rigid;
         bool isContrable = false;
+        float disableTimer;
 
         void Awake()
         {
             rigid = GetComponent<Rigidbody2D>();
+        }
+
+        void OnEnable()
+        {
+            disableTimer = Time.time + disableDelay;
         }
 
         void Update()
@@ -25,6 +34,11 @@ namespace HoverBall
             if (Time.frameCount % UPDATE_RATE == 0)
             {
                 isContrable = GameController.Instance.IsGameStart;
+                
+                if (disableTimer < Time.time && gameObject.activeSelf)
+                {
+                    gameObject.SetActive(false);
+                }
             }
         }
 
