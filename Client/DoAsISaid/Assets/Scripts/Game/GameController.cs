@@ -28,6 +28,8 @@ namespace HoverBall
 
             IsGameStart = true;
             OnGameStart?.Invoke();
+
+            Debug.Log("Game Start..");
         }
 
         public void GameOver()
@@ -36,7 +38,9 @@ namespace HoverBall
                 return;
 
             IsGameStart = false;
-            OnGameStart?.Invoke();
+            OnGameOver?.Invoke();
+
+            Debug.Log("Game Over..");
         }
     }
 }

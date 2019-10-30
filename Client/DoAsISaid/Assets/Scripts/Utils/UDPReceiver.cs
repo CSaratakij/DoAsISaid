@@ -39,8 +39,20 @@ public class UDPReceiver : MonoBehaviour
 
     void Awake()
     {
+        MakeSingleton();
+    }
+
+    void MakeSingleton()
+    {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void Start()

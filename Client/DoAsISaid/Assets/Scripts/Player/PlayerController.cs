@@ -153,5 +153,13 @@ namespace HoverBall
         {
             isControlable = false;
         }
+
+        void OnTriggerEnter2D(Collider2D col)
+        {
+            if (col.CompareTag("Enemy"))
+            {
+                GameController.Instance.GameOver();
+            }
+        }
     }
 }
